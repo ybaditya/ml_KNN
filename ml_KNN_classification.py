@@ -11,10 +11,11 @@ from sklearn.metrics import mean_squared_error
 from sklearn.metrics import mean_absolute_error
 from sklearn.neighbors import KNeighborsClassifier
 
-st.set_page_config(page_title="Machine Learning App")
-st.title("Machine Learning")
+st.set_page_config(page_title="Machine Learning Apps")
+st.title("Machine Learning Apps")
 st.subheader("K-Nearest Neighbors Classification")
 st.write(":blue[Created by : YB Aditya]")
+st.markdown("---")
 
 st.caption(
     """The k-nearest neighbors (KNN) algorithm is a data classification method for estimating the likelihood that a data point will become a member of one group or another based on what group the data points nearest to it belong to"""
