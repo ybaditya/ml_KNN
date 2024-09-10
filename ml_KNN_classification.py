@@ -9,6 +9,8 @@ from PIL import Image
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error
 from sklearn.metrics import mean_absolute_error
+from sklearn.metrics import classification_report
+from sklearn.metrics import confusion_matrix
 from sklearn.neighbors import KNeighborsClassifier
 
 st.set_page_config(page_title="Machine Learning Apps")
@@ -85,12 +87,14 @@ def knn_classification():
         f"Score also mean model accuracy, your model accurancy is {model_score*100}%"
     )
 
-    mse = mean_squared_error(y_test, y_pred)
-    st.write("Mean Squared Error :", mse)
-    mae = mean_absolute_error(y_test, y_pred)
-    st.write("Mean Absolute Error :", mae)
-    rmse = np.sqrt(mse)
-    st.write("Root Mean Squared Error :", rmse)
+    con_matrix = confusion_matrix(y_test, y_pred)
+    st.write("Confusion Matrix :")
+    st.dataframe(pd.DataFrame(con_matrix))
+    st.caption("Confusion Matrix :  matrix shows the number of correct and incorrect predictions made by the classifier.")
+
+    st.write("Classification Report :")
+    st.dataframe(pd.DataFrame(classification_report(y_test, y_pred, output_dict=True)).transpose())
+    st.caption("Classification Report :  report shows precision, recall, f1-score, support and accuracy metrics for each class in the dataset.")
 
     st.write("**Do you want to download this model ?**")
     st.caption("**WARNING THIS WILL RELOAD THE PAGE!**")
