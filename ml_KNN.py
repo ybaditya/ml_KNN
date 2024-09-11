@@ -9,13 +9,14 @@ from PIL import Image
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error
 from sklearn.metrics import mean_absolute_error
-from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix
+from sklearn.metrics import classification_report
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.neighbors import KNeighborsRegressor
 
 st.set_page_config(page_title="Machine Learning Apps")
 st.title("Machine Learning Apps")
-st.subheader("K-Nearest Neighbors Classification")
+st.subheader("K-Nearest Neighbors")
 st.write(":blue[Created by : YB Aditya]")
 st.markdown("---")
 
@@ -25,6 +26,8 @@ st.caption(
 
 image = Image.open("knn.jpg")
 st.image(image, caption="K-Nearest Neighbors")
+
+chooice = st.selectbox("Select Machine Learning Model", ("K-Nearest Neighbors Regression", "K-Nearest Neighbors Classification"))
 
 uploaded_file = st.file_uploader("Choose a XLSX file", type="xlsx")
 st.caption(
@@ -62,7 +65,6 @@ if uploaded_file:
     st.write("**Select The Independent Variables (_X1, X2, X3, ..._):**")
     independent_vars = st.multiselect("Independent Variables", list(data.columns))
 
-
 def knn_classification():
     # Plot Graph Correlation
     st.write("**Graph Corelation Between Data :**")
@@ -76,9 +78,9 @@ def knn_classification():
     x_train, x_test, y_train, y_test = train_test_split(
         X, y, test_size=test, random_state=random
     )
-    knn = KNeighborsClassifier(n_neighbors=neighbors)
-    model = knn.fit(x_train, y_train)
-    y_pred = knn.predict(x_test)
+    knnc = KNeighborsClassifier(n_neighbors=neighbors)
+    model = knnc.fit(x_train, y_train)
+    y_pred = knnc.predict(x_test)
 
     st.write("**Performance Evaluation**")
     model_score = model.score(x_test, y_test)
@@ -104,12 +106,61 @@ def knn_classification():
         file_name="model.pkl",
     )
 
-    predict_var = knn.predict([variable])
+    predict_var = knnc.predict([variable])
     st.sidebar.write("Prediction Value :", predict_var[0])
 
+def knn_regression():
+    # Plot Graph Correlation
+    st.write("**Graph Corelation Between Data :**")
+    fig = sns.pairplot(data, x_vars=independent_vars, y_vars=independent_vars, hue=target_var)
+    st.pyplot(fig)
+    fig_1 = sns.pairplot(data, x_vars=independent_vars, y_vars=target_var, hue=target_var)
+    st.pyplot(fig_1)
+    # Train a Multiple Regression model and display the results
+    X = data[independent_vars]
+    y = data[target_var]
+    x_train, x_test, y_train, y_test = train_test_split(
+        X, y, test_size=test, random_state=random
+    )
+    knnr = KNeighborsRegressor(n_neighbors=neighbors)
+    model = knnr.fit(x_train, y_train)
+    y_pred = knnr.predict(x_test)
+
+    st.write("**Regression Performance Evaluation**")
+    reg_score = model.score(x_test, y_test)
+    st.write("Regression Score :", reg_score )
+    st.caption(f"Regression Score also mean model accuracy, your model accurancy is {reg_score*100}%")
+
+    mse = mean_squared_error(y_test, y_pred)
+    st.write("Mean Squared Error :", mse)
+    mae = mean_absolute_error(y_test, y_pred)
+    st.write("Mean Absolute Error :", mae)
+    rmse = np.sqrt(mse)
+    st.write("Root Mean Squared Error :", rmse)
+      
+    # Plot Data
+    st.write("**Linear Graph Actual vs Prediction**")
+    fig, ax = plt.subplots()
+    ax.scatter(y_test, y_pred, color='g')
+    ax.plot(y_pred, y_pred, color='k' )
+    st.pyplot(fig)
+
+    st.write("**Do you want to download this model ?**")
+    st.caption("**WARNING THIS WILL RELOAD THE PAGE!**")
+    st.download_button(
+        "Download Model",
+        data=pickle.dumps(model),
+        file_name="model.pkl",
+    )
+
+    predict_var = knnr.predict([variable])
+    st.sidebar.write("Prediction Value :", predict_var[0])
+
+st.sidebar.link_button("Link to Multi Apps & Tools", "https://multiappsandtools.web.app/")
+st.sidebar.markdown("---")
 
 st.sidebar.write("_**Input Machine Learning Parameter**_")
-test = st.sidebar.slider("Input test size", min_value=0.1, max_value=0.4)
+test = st.sidebar.slider("Input test size", min_value=0.1, max_value=0.4, value=0.2)
 st.sidebar.caption("define test size from the dataset. 0.2 mean 20% from total dataset")
 random = st.sidebar.number_input("Input random state", min_value=0, max_value=50)
 st.sidebar.caption(
@@ -119,8 +170,6 @@ neighbors = st.sidebar.number_input("Input k_neighbors", min_value=0, max_value=
 st.sidebar.caption(
     "k_neighbors : the number of nearest neighbours to include in the majority of the voting process."
 )
-ml_button = st.sidebar.button("Run")
-
 
 if uploaded_file and independent_vars is not None:
     variable = []
@@ -130,7 +179,16 @@ if uploaded_file and independent_vars is not None:
         var = st.sidebar.number_input(f"Input {independent_vars[i]}")
         variable.append(var)
 
-if ml_button:
-    knn_classification()
+if chooice == "K-Nearest Neighbors Regression":
+    st.sidebar.write("This button will run K-Nearest Neighbours Regression")
+    ml_button_rgs = st.sidebar.button("Run KNN Regression")
+    st.sidebar.write("---")
+    if ml_button_rgs:
+       knn_regression()
 
-
+if chooice == "K-Nearest Neighbors Classification":
+    st.sidebar.write("This button will run K-Nearest Neighbours Classification")
+    ml_button_cls = st.sidebar.button("Run KNN Classification")
+    st.sidebar.write("---")
+    if ml_button_cls:
+        knn_classification()
